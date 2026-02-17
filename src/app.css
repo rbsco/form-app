@@ -1,0 +1,87 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+/* Custom CSS variables for dynamic theming */
+:root {
+  --color-primary: #3b82f6;
+  --color-primary-50: #eff6ff;
+  --color-primary-100: #dbeafe;
+  --color-primary-500: #3b82f6;
+  --color-primary-600: #2563eb;
+  --color-primary-700: #1d4ed8;
+  --color-background: #ffffff;
+  --color-text: #1f2937;
+  --color-muted: #f3f4f6;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-background: #111827;
+    --color-text: #f9fafb;
+    --color-muted: #1f2937;
+  }
+}
+
+/* Form field styling */
+.form-field {
+  @apply w-full px-4 py-2.5 rounded-lg border bg-white/80 focus:ring-2 focus:outline-none transition-all;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.form-field:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Button styling */
+.btn-primary {
+  @apply w-full py-3.5 rounded-xl font-semibold text-white shadow-lg transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed;
+  background-color: var(--color-primary);
+  box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.2);
+}
+
+.btn-primary:hover:not(:disabled) {
+  box-shadow: 0 20px 25px -5px rgba(59, 130, 246, 0.3);
+}
+
+/* Animation utilities */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Loading states */
+.loading-spinner {
+  @apply animate-spin w-5 h-5;
+}
+
+/* Error states */
+.error-field {
+  @apply border-red-500 focus:border-red-500 focus:ring-red-500;
+}
+
+.error-text {
+  @apply text-sm text-red-500 mt-1;
+}
+
+/* Success states */
+.success-message {
+  @apply bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg;
+}
+
+/* Responsive utilities */
+@media (max-width: 640px) {
+  .form-field {
+    @apply px-3 py-2 text-base;
+  }
+  
+  .btn-primary {
+    @apply py-3 text-base;
+  }
+}
