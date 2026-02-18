@@ -115,7 +115,8 @@
     class:py-2.5
     class:rounded-lg
     class:border
-    class:bg-white/80
+    class:bg-opacity-80
+    class:bg-white
     class:focus:outline-none
     class:transition-all
     on:change={handleChange}
