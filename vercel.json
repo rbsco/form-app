@@ -27,12 +27,6 @@
         }
       ]
     }
-  ],
-  "redirects": [
-    {
-      "source": "/",
-      "destination": "https://maintenance-saas.fly.dev/forms",
-      "permanent": false
-    }
   ]
+  
 }
