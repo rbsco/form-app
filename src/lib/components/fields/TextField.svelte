@@ -92,7 +92,7 @@
   $: inputType = field.type === 'phone' ? 'tel' : field.type;
   $: hasError = error && error.length > 0;
   $: inputClasses = [
-    'form-field',
+    'form-field w-full px-4 py-2.5 rounded-lg border bg-opacity-80 bg-white focus:outline-none transition-all',
     hasError ? 'error-field' : '',
     isFocused ? 'ring-2 ring-primary' : '',
     disabled ? 'opacity-50 cursor-not-allowed' : ''
@@ -119,15 +119,6 @@
     {disabled}
     {autocomplete}
     class={inputClasses}
-    class:w-full
-    class:px-4
-    class:py-2.5
-    class:rounded-lg
-    class:border
-    class:bg-opacity-80
-    class:bg-white
-    class:focus:outline-none
-    class:transition-all
     on:input={handleInput}
     on:focus={handleFocus}
     on:blur={handleBlur}
