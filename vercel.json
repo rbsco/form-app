@@ -6,7 +6,7 @@
   "regions": ["iad1"],
   "functions": {
     "src/routes/api/**/*.ts": {
-      "runtime": "nodejs18.x"
+      "runtime": "nodejs25.6.1"
     }
   },
   "headers": [
@@ -35,7 +35,7 @@
   "redirects": [
     {
       "source": "/",
-      "destination": "https://worksmart.com/forms",
+      "destination": "https://maintenance-saas.fly.dev/forms",
       "permanent": false
     }
   ]
