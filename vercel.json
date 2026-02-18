@@ -6,7 +6,7 @@
   "regions": ["iad1"],
   "functions": {
     "src/routes/api/**/*.ts": {
-      "runtime": "nodejs25.6.1"
+      "runtime": "@vercel/nodejs@3.0.0"
     }
   },
   "headers": [
