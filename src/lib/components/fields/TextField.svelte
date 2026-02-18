@@ -133,8 +133,6 @@
     on:blur={handleBlur}
     on:keydown={handleKeydown}
     required={field.required}
-    {field.type === 'email' ? 'pattern': ''}
-    {field.type === 'phone' ? 'pattern': ''}
   />
 
   {#if hasError}
