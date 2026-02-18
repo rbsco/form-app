@@ -227,7 +227,7 @@
     {#if fieldLayout.length === 1}
       <!-- Single column layout -->
       {#each fieldLayout[0] as field (field.id)}
-        <div class="animate-in fade-in duration-300" style="animation-delay: {$index * 50}ms">
+        <div class="animate-in fade-in duration-300" style="animation-delay: {index * 50}ms">
           <svelte:component 
             this={getFieldComponent(field)}
             {field}

@@ -8,7 +8,7 @@
   import DynamicForm from '$lib/components/DynamicForm.svelte';
   import { CheckCircle, AlertCircle, Loader2, ArrowLeft } from 'lucide-svelte';
 
-  export let data;
+  // export let data;
 
   let orgCode = '';
   let formConfigData = null;
