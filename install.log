@@ -1,0 +1,8 @@
+[15:51:29 2026-03-07] FETCHING Version 2.42.14
+[15:51:29 2026-03-07] DOWNLOADING https://github.com/spicetify/cli/releases/download/v2.42.14/spicetify-2.42.14-darwin-arm64.tar.gz
+[15:51:31 2026-03-07] EXTRACTING /Users/timmy/.spicetify/spicetify.tar.gz
+[15:51:31 2026-03-07] SETTING EXECUTABLE PERMISSIONS TO /Users/timmy/.spicetify/spicetify
+[15:51:31 2026-03-07] REMOVING /Users/timmy/.spicetify/spicetify.tar.gz
+[15:51:31 2026-03-07] spicetify path already set in /Users/timmy/.zshrc, continuing...
+[15:51:31 2026-03-07] spicetify v2.42.14 was installed successfully to /Users/timmy/.spicetify
+[15:51:31 2026-03-07] Run 'spicetify --help' to get started

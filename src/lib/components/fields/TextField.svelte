@@ -1,102 +1,105 @@
 <script lang="ts">
-  import { onMount, createEventDispatcher } from 'svelte';
-  import { formState, analyticsActions } from '../../stores';
-  import { validateField } from '../../utils';
-  import type { FormField } from '../../types';
+  import { onMount, createEventDispatcher } from "svelte";
+  import { get } from "svelte/store";
+  import { formActions, formState, analyticsActions } from "../../stores";
+  import { validateField } from "../../utils";
+  import type { FormField } from "../../types";
 
   export let field: FormField;
-  export let value: string = '';
-  export let error: string = '';
+  export let value: string = "";
+  export let error: string = "";
   export let disabled: boolean = false;
-  export let placeholder: string = field.placeholder || '';
-  export let autocomplete: string = 'off';
+  export let placeholder: string = field.placeholder || "";
+  export let autocomplete: string = "off";
 
   const dispatch = createEventDispatcher();
   let inputElement: HTMLInputElement;
   let isFocused = false;
 
   onMount(() => {
-    if (inputElement && field.type === 'email') {
-      inputElement.type = 'email';
+    if (inputElement && field.type === "email") {
+      inputElement.type = "email";
     }
   });
 
   function handleInput(event: Event) {
     const target = event.target as HTMLInputElement;
     const newValue = target.value;
-    
+
     value = newValue;
-    error = '';
-    
+    error = "";
+
     // Update store
-    formState.updateField(field.name, newValue);
-    
+    formActions.updateField(field.name, newValue);
+
     // Track analytics
     analyticsActions.trackFieldInteraction(
-      formState.config?.id || '',
-      formState.config?.org_id || '',
+      get(formState).config?.id || "",
+      get(formState).config?.org_id || "",
       field.name,
       field.type,
-      'change'
+      "change",
     );
-    
-    dispatch('input', { value: newValue });
+
+    dispatch("change", { value: newValue });
   }
 
   function handleFocus() {
     isFocused = true;
-    
+
     // Track analytics
     analyticsActions.trackFieldInteraction(
-      formState.config?.id || '',
-      formState.config?.org_id || '',
+      get(formState).config?.id || "",
+      get(formState).config?.org_id || "",
       field.name,
       field.type,
-      'focus'
+      "focus",
     );
-    
-    dispatch('focus');
+
+    dispatch("focus");
   }
 
   function handleBlur() {
     isFocused = false;
-    
+
     // Validate on blur
     const validation = validateField(field, value);
     if (!validation.isValid) {
-      error = validation.error || '';
-      formState.setFieldError(field.name, error);
+      error = validation.error || "";
+      formActions.setFieldError(field.name, error);
     } else {
-      formState.clearFieldError(field.name);
+      formActions.clearFieldError(field.name);
     }
-    
+
     // Track analytics
     analyticsActions.trackFieldInteraction(
-      formState.config?.id || '',
-      formState.config?.org_id || '',
+      get(formState).config?.id || "",
+      get(formState).config?.org_id || "",
       field.name,
       field.type,
-      'blur'
+      "blur",
     );
-    
-    dispatch('blur', { value, error });
+
+    dispatch("blur", { value, error });
   }
 
   function handleKeydown(event: KeyboardEvent) {
-    if (event.key === 'Enter' && field.type !== 'textarea') {
+    if (event.key === "Enter" && field.type !== "textarea") {
       event.preventDefault();
-      dispatch('submit');
+      dispatch("submit");
     }
   }
 
-  $: inputType = field.type === 'phone' ? 'tel' : field.type;
+  $: inputType = field.type === "phone" ? "tel" : field.type;
   $: hasError = error && error.length > 0;
   $: inputClasses = [
-    'form-field w-full px-4 py-2.5 rounded-lg border bg-opacity-80 bg-white focus:outline-none transition-all',
-    hasError ? 'error-field' : '',
-    isFocused ? 'ring-2 ring-primary' : '',
-    disabled ? 'opacity-50 cursor-not-allowed' : ''
-  ].filter(Boolean).join(' ');
+    "form-field w-full px-4 py-2.5 rounded-lg border bg-opacity-80 bg-white focus:outline-none transition-all",
+    hasError ? "error-field" : "",
+    isFocused ? "ring-2 ring-primary" : "",
+    disabled ? "opacity-50 cursor-not-allowed" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
 </script>
 
 <div class="space-y-2">
@@ -114,7 +117,7 @@
     id={field.id}
     name={field.name}
     type={inputType}
-    value={value}
+    {value}
     {placeholder}
     {disabled}
     {autocomplete}
@@ -130,9 +133,7 @@
     <p class="error-text">{error}</p>
   {/if}
 
-  {#if field.type === 'phone' && value}
-    <p class="text-xs text-muted-foreground">
-      Format: (555) 555-5555
-    </p>
+  {#if field.type === "phone" && value}
+    <p class="text-xs text-muted-foreground">Format: (555) 555-5555</p>
   {/if}
 </div>

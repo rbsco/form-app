@@ -39,7 +39,7 @@ export const FormConfigSchema = z.object({
   }).optional(),
   settings: z.object({
     show_progress: z.boolean().default(false),
-    auto_save: z.boolean().default(true),
+    auto_save: z.boolean().default(false),
     confirmation_message: z.string().optional(),
     redirect_url: z.string().url().optional()
   }).optional()

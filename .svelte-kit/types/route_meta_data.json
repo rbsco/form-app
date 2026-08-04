@@ -1,11 +1,13 @@
 {
 	"/": [
+		"src/routes/+layout.ts",
 		"src/routes/+layout.ts"
 	],
 	"/api/submit": [
 		"src/routes/api/submit/+server.ts"
 	],
 	"/[orgCode]": [
+		"src/routes/[orgCode]/+page.server.ts",
 		"src/routes/+layout.ts"
 	]
 }

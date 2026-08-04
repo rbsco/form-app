@@ -1,14 +1,15 @@
 <script lang="ts">
-  import { createEventDispatcher, onMount } from 'svelte';
-  import { formState, analyticsActions } from '../../stores';
-  import { validateField } from '../../utils';
-  import type { FormField } from '../../types';
+  import { createEventDispatcher, onMount } from "svelte";
+  import { get } from "svelte/store";
+  import { formActions, formState, analyticsActions } from "../../stores";
+  import { validateField } from "../../utils";
+  import type { FormField } from "../../types";
 
   export let field: FormField;
-  export let value: string = '';
-  export let error: string = '';
+  export let value: string = "";
+  export let error: string = "";
   export let disabled: boolean = false;
-  export let placeholder: string = 'Select an option...';
+  export let placeholder: string = "Select an option...";
 
   const dispatch = createEventDispatcher();
   let selectElement: HTMLSelectElement;
@@ -17,78 +18,80 @@
   onMount(() => {
     // Set default value if none provided
     if (!value && field.options && field.options.length > 0) {
-      value = '';
+      value = "";
     }
   });
 
   function handleChange(event: Event) {
     const target = event.target as HTMLSelectElement;
     const newValue = target.value;
-    
+
     value = newValue;
-    error = '';
-    
+    error = "";
+
     // Update store
-    formState.updateField(field.name, newValue);
-    
+    formActions.updateField(field.name, newValue);
+
     // Track analytics
     analyticsActions.trackFieldInteraction(
-      formState.config?.id || '',
-      formState.config?.org_id || '',
+      get(formState).config?.id || "",
+      get(formState).config?.org_id || "",
       field.name,
       field.type,
-      'change'
+      "change",
     );
-    
-    dispatch('change', { value: newValue });
+
+    dispatch("change", { value: newValue });
   }
 
   function handleFocus() {
     isFocused = true;
-    
+
     // Track analytics
     analyticsActions.trackFieldInteraction(
-      formState.config?.id || '',
-      formState.config?.org_id || '',
+      get(formState).config?.id || "",
+      get(formState).config?.org_id || "",
       field.name,
       field.type,
-      'focus'
+      "focus",
     );
-    
-    dispatch('focus');
+
+    dispatch("focus");
   }
 
   function handleBlur() {
     isFocused = false;
-    
+
     // Validate on blur
     const validation = validateField(field, value);
     if (!validation.isValid) {
-      error = validation.error || '';
-      formState.setFieldError(field.name, error);
+      error = validation.error || "";
+      formActions.setFieldError(field.name, error);
     } else {
-      formState.clearFieldError(field.name);
+      formActions.clearFieldError(field.name);
     }
-    
+
     // Track analytics
     analyticsActions.trackFieldInteraction(
-      formState.config?.id || '',
-      formState.config?.org_id || '',
+      get(formState).config?.id || "",
+      get(formState).config?.org_id || "",
       field.name,
       field.type,
-      'blur'
+      "blur",
     );
-    
-    dispatch('blur', { value, error });
+
+    dispatch("blur", { value, error });
   }
 
   $: hasError = error && error.length > 0;
   $: selectClasses = [
-    'form-field w-full px-4 py-2.5 rounded-lg border bg-opacity-80 bg-white focus:outline-none transition-all',
-    hasError ? 'error-field' : '',
-    isFocused ? 'ring-2 ring-primary' : '',
-    disabled ? 'opacity-50 cursor-not-allowed' : ''
-  ].filter(Boolean).join(' ');
+    "form-field w-full px-4 py-2.5 rounded-lg border bg-opacity-80 bg-white focus:outline-none transition-all",
+    hasError ? "error-field" : "",
+    isFocused ? "ring-2 ring-primary" : "",
+    disabled ? "opacity-50 cursor-not-allowed" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   $: hasOptions = field.options && field.options.length > 0;
 </script>
@@ -118,7 +121,7 @@
     <option value="" disabled selected={!value}>
       {placeholder}
     </option>
-    
+
     {#if hasOptions}
       {#each field.options as option}
         <option value={option}>
@@ -133,8 +136,6 @@
   {/if}
 
   {#if !hasOptions}
-    <p class="text-xs text-muted-foreground">
-      No options available
-    </p>
+    <p class="text-xs text-muted-foreground">No options available</p>
   {/if}
 </div>

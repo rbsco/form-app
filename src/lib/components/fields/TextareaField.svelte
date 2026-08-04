@@ -1,14 +1,15 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
-  import { formState, analyticsActions } from '../../stores';
-  import { validateField } from '../../utils';
-  import type { FormField } from '../../types';
+  import { createEventDispatcher } from "svelte";
+  import { get } from "svelte/store";
+  import { formActions, formState, analyticsActions } from "../../stores";
+  import { validateField } from "../../utils";
+  import type { FormField } from "../../types";
 
   export let field: FormField;
-  export let value: string = '';
-  export let error: string = '';
+  export let value: string = "";
+  export let error: string = "";
   export let disabled: boolean = false;
-  export let placeholder: string = field.placeholder || '';
+  export let placeholder: string = field.placeholder || "";
   export let rows: number = 4;
 
   const dispatch = createEventDispatcher();
@@ -19,80 +20,82 @@
   function handleInput(event: Event) {
     const target = event.target as HTMLTextAreaElement;
     const newValue = target.value;
-    
+
     value = newValue;
     characterCount = newValue.length;
-    error = '';
-    
+    error = "";
+
     // Update store
-    formState.updateField(field.name, newValue);
-    
+    formActions.updateField(field.name, newValue);
+
     // Track analytics
     analyticsActions.trackFieldInteraction(
-      formState.config?.id || '',
-      formState.config?.org_id || '',
+      get(formState).config?.id || "",
+      get(formState).config?.org_id || "",
       field.name,
       field.type,
-      'change'
+      "change",
     );
-    
-    dispatch('input', { value: newValue, characterCount });
+
+    dispatch("change", { value: newValue, characterCount });
   }
 
   function handleFocus() {
     isFocused = true;
-    
+
     // Track analytics
     analyticsActions.trackFieldInteraction(
-      formState.config?.id || '',
-      formState.config?.org_id || '',
+      get(formState).config?.id || "",
+      get(formState).config?.org_id || "",
       field.name,
       field.type,
-      'focus'
+      "focus",
     );
-    
-    dispatch('focus');
+
+    dispatch("focus");
   }
 
   function handleBlur() {
     isFocused = false;
-    
+
     // Validate on blur
     const validation = validateField(field, value);
     if (!validation.isValid) {
-      error = validation.error || '';
-      formState.setFieldError(field.name, error);
+      error = validation.error || "";
+      formActions.setFieldError(field.name, error);
     } else {
-      formState.clearFieldError(field.name);
+      formActions.clearFieldError(field.name);
     }
-    
+
     // Track analytics
     analyticsActions.trackFieldInteraction(
-      formState.config?.id || '',
-      formState.config?.org_id || '',
+      get(formState).config?.id || "",
+      get(formState).config?.org_id || "",
       field.name,
       field.type,
-      'blur'
+      "blur",
     );
-    
-    dispatch('blur', { value, error, characterCount });
+
+    dispatch("blur", { value, error, characterCount });
   }
 
   function handleKeydown(event: KeyboardEvent) {
     // Handle Ctrl+Enter for submit
-    if (event.key === 'Enter' && event.ctrlKey) {
+    if (event.key === "Enter" && event.ctrlKey) {
       event.preventDefault();
-      dispatch('submit');
+      dispatch("submit");
     }
   }
 
   $: hasError = error && error.length > 0;
   $: inputClasses = [
-    'form-field w-full px-4 py-2.5 rounded-lg border bg-opacity-80 bg-white focus:outline-none transition-all resize-none',
-    hasError ? 'error-field' : '',
-    isFocused ? 'ring-2 ring-primary' : '',
-    disabled ? 'opacity-50 cursor-not-allowed' : ''
-  ].filter(Boolean).join(' ');
+    "form-field w-full px-4 py-2.5 rounded-lg border bg-opacity-80 bg-white focus:outline-none transition-all resize-none",
+    hasError ? "error-field" : "",
+    isFocused ? "ring-2 ring-primary" : "",
+    disabled ? "opacity-50 cursor-not-allowed" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   $: maxLength = field.validation?.max;
   $: isNearLimit = maxLength && characterCount > maxLength * 0.9;
@@ -113,7 +116,7 @@
     bind:this={textareaElement}
     id={field.id}
     name={field.name}
-    value={value}
+    {value}
     {placeholder}
     {disabled}
     {rows}

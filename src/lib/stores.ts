@@ -28,6 +28,31 @@ export const sessionDuration = derived(
 export const autoSaveEnabled = writable<boolean>(true);
 export const lastAutoSave = writable<Date | null>(null);
 
+// Helper function to safely use localStorage
+const safeLocalStorage = {
+  get: (key: string): any => {
+    if (typeof window === 'undefined') return null;
+    try {
+      const item = localStorage.getItem(key);
+      return item ? JSON.parse(item) : null;
+    } catch {
+      return null;
+    }
+  },
+  set: (key: string, value: any): void => {
+    if (typeof window === 'undefined') return;
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+    } catch {
+      // Ignore errors
+    }
+  },
+  remove: (key: string): void => {
+    if (typeof window === 'undefined') return;
+    localStorage.removeItem(key);
+  }
+};
+
 // Form validation state
 export const isValid = derived(
   formState,
@@ -39,15 +64,15 @@ export const formProgress = derived(
   formState,
   $formState => {
     if (!$formState.config) return 0;
-    
+
     const requiredFields = $formState.config.fields.filter(field => field.required);
     const filledRequiredFields = requiredFields.filter(field => {
       const value = $formState.data[field.name];
       return value && value.toString().trim() !== '';
     });
-    
-    return requiredFields.length > 0 
-      ? (filledRequiredFields.length / requiredFields.length) * 100 
+
+    return requiredFields.length > 0
+      ? (filledRequiredFields.length / requiredFields.length) * 100
       : 0;
   }
 );
@@ -67,12 +92,12 @@ export const formActions = {
       isSubmitted: false,
       sessionId: generateSessionId()
     }));
-    
+
     formConfig.set(config);
-    
-    // Restore saved data if exists
-    if (browser && config.settings?.auto_save) {
-      const savedData = storage.get(`form_${config.id}_data`);
+
+    // Restore saved data if exists and auto-save is enabled
+    if (browser && config.settings?.auto_save === true && get(autoSaveEnabled)) {
+      const savedData = safeLocalStorage.get(`form_${config.id}_data`);
       if (savedData) {
         formState.update(state => ({
           ...state,
@@ -86,17 +111,17 @@ export const formActions = {
   updateField: (fieldName: string, value: any) => {
     formState.update(state => {
       const newData = { ...state.data, [fieldName]: value };
-      
+
       // Clear error for this field
       const newErrors = { ...state.errors };
       delete newErrors[fieldName];
-      
-      // Auto-save if enabled
-      if (browser && state.config?.settings?.auto_save && autoSaveEnabled) {
-        storage.set(`form_${state.config.id}_data`, newData);
+
+      // Auto-save if explicitly enabled
+      if (browser && state.config?.settings?.auto_save === true && get(autoSaveEnabled)) {
+        safeLocalStorage.set(`form_${state.config.id}_data`, newData);
         lastAutoSave.set(new Date());
       }
-      
+
       return {
         ...state,
         data: newData,
@@ -138,7 +163,7 @@ export const formActions = {
   // Mark form as submitted
   setSubmitted: () => {
     formState.update(state => ({ ...state, isSubmitted: true }));
-    
+
     // Clear saved data after successful submission
     if (browser && state.config?.id) {
       storage.remove(`form_${state.config.id}_data`);
@@ -156,10 +181,10 @@ export const formActions = {
         isSubmitted: false,
         sessionId: generateSessionId()
       }));
-      
+
       // Clear saved data
       if (browser) {
-        storage.remove(`form_${config.id}_data`);
+        safeLocalStorage.remove(`form_${config.id}_data`);
       }
     }
   },
@@ -168,15 +193,15 @@ export const formActions = {
   validate: () => {
     const state = get(formState);
     const config = state.config;
-    
+
     if (!config) return false;
-    
+
     let isValid = true;
     const errors: Record<string, string> = {};
-    
+
     for (const field of config.fields) {
       const value = state.data[field.name];
-      
+
       if (field.required && (!value || value.toString().trim() === '')) {
         errors[field.name] = `${field.label} is required`;
         isValid = false;
@@ -190,7 +215,7 @@ export const formActions = {
               isValid = false;
             }
             break;
-            
+
           case 'phone':
             const phoneRegex = /^[\d\s\-\+\(\)]+$/;
             if (!phoneRegex.test(value)) {
@@ -198,7 +223,7 @@ export const formActions = {
               isValid = false;
             }
             break;
-            
+
           case 'text':
           case 'textarea':
             const strValue = value.toString();
@@ -214,7 +239,7 @@ export const formActions = {
         }
       }
     }
-    
+
     formState.update(state => ({ ...state, errors }));
     return isValid;
   }
@@ -226,7 +251,7 @@ export const analyticsActions = {
   trackEvent: (event: Omit<AnalyticsEvent, 'id'>) => {
     const queue = get(analyticsQueue);
     analyticsQueue.update(q => [...q, event as AnalyticsEvent]);
-    
+
     // Process queue (in real implementation, this would send to server)
     processAnalyticsQueue();
   },
@@ -256,17 +281,17 @@ export const analyticsActions = {
 
   // Track field interaction
   trackFieldInteraction: (
-    formId: string, 
-    orgId: string, 
-    fieldName: string, 
-    fieldType: string, 
+    formId: string,
+    orgId: string,
+    fieldName: string,
+    fieldType: string,
     eventType: 'focus' | 'blur' | 'change'
   ) => {
     analyticsActions.trackEvent({
       form_id: formId,
       org_id: orgId,
-      event_type: eventType === 'focus' ? 'field_focus' : 
-                 eventType === 'blur' ? 'field_blur' : 'field_change',
+      event_type: eventType === 'focus' ? 'field_focus' :
+        eventType === 'blur' ? 'field_blur' : 'field_change',
       field_name: fieldName,
       field_type: fieldType,
       session_id: get(formState).sessionId,
@@ -279,10 +304,10 @@ export const analyticsActions = {
 function processAnalyticsQueue() {
   const queue = get(analyticsQueue);
   if (queue.length === 0) return;
-  
-  // In real implementation, this would send events to your analytics endpoint
-  console.log('Analytics events to process:', queue);
-  
+
+  // In real implementation, this would send events to your analytics endpoint.
+  // Do not log the queue to the console — it can contain form interaction data.
+
   // Clear queue
   analyticsQueue.set([]);
 }
@@ -295,16 +320,16 @@ if (browser) {
   autoSaveTimer = setInterval(() => {
     const state = get(formState);
     const config = get(formConfig);
-    
+
     if (config?.settings?.auto_save && get(autoSaveEnabled) && !state.isSubmitted) {
-      storage.set(`form_${config.id}_data`, state.data);
+      safeLocalStorage.set(`form_${config.id}_data`, state.data);
       lastAutoSave.set(new Date());
     }
   }, 30000);
 }
 
 // Cleanup on page unload
-if (browser) {
+if (browser && typeof window !== 'undefined') {
   window.addEventListener('beforeunload', () => {
     if (autoSaveTimer) {
       clearInterval(autoSaveTimer);
